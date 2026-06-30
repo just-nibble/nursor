@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Test stub for cursor-agent.
+#   --list-models : print a fake model list
+#   (otherwise)   : ignore args and replay a recorded stream-json
+here="$(cd "$(dirname "$0")" && pwd)"
+
+for arg in "$@"; do
+  if [ "$arg" = "--list-models" ]; then
+    cat <<'EOF'
+Available models
+
+auto - Auto (current)
+composer-2.5-fast - Composer 2.5 Fast (default)
+claude-opus-4-8-thinking-high - Opus 4.8 1M Thinking
+gpt-5.5-high - GPT-5.5 1M High
+EOF
+    exit 0
+  fi
+done
+
+cat "$here/stream.ndjson"
+exit 0

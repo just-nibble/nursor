@@ -1,0 +1,79 @@
+-- nursor: configuration defaults and merge logic.
+local M = {}
+
+M.defaults = {
+  -- Path to (or name of) the cursor-agent binary.
+  cmd = "cursor-agent",
+
+  -- Model to use. nil/"" => let cursor-agent pick (Auto). e.g. "sonnet-4.5".
+  model = nil,
+
+  -- Default capability when a panel is opened: "ask" (read-only Q&A) or "agent".
+  default_mode = "ask",
+
+  -- Modes the <C-t> toggle cycles through, in order.
+  mode_cycle = { "ask", "agent" },
+
+  -- Pass --trust so the workspace is trusted in headless mode (no prompt).
+  trust = true,
+
+  -- In "agent" mode, pass --force so tool calls run without interactive prompts.
+  -- Headless agent mode cannot answer permission prompts, so this is required
+  -- for the agent to actually edit files / run commands. Set false to keep it
+  -- effectively read-only even in agent mode.
+  agent_force = true,
+
+  context = {
+    -- When no visual selection is given, tell the agent which file/line the
+    -- cursor is on so it can open the file itself.
+    include_file = true,
+    -- Hard cap on selection lines embedded into the prompt.
+    max_selection_lines = 600,
+  },
+
+  ui = {
+    -- Sidebar width. <= 1 is treated as a fraction of total columns,
+    -- > 1 is an absolute column count.
+    width = 0.40,
+    -- Height (in rows) of the prompt input area at the bottom.
+    prompt_height = 6,
+    -- "right" or "left".
+    position = "right",
+    wrap = true,
+    -- Show token usage / duration after each answer.
+    show_usage = true,
+    -- Render the model's "thinking" content (if any).
+    show_thinking = false,
+    -- Spinner frames shown in the winbar while the agent is responding.
+    spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
+  },
+
+  -- Buffer-local keymaps inside the panel. Set any to false/nil to disable.
+  keymaps = {
+    submit = "<C-s>",        -- submit prompt (insert + normal mode)
+    submit_normal = "<CR>",  -- submit prompt (normal mode only)
+    new_chat = "<C-n>",      -- start a fresh chat (clears session)
+    toggle_mode = "<C-t>",   -- cycle through mode_cycle
+    model = "<C-g>",         -- open the model picker
+    diff = "<C-y>",          -- view agent file changes (normal mode)
+    focus_prompt = "i",      -- from the conversation window, jump to prompt
+    close = "q",             -- close the panel (from either window, normal mode)
+    stop = "<C-c>",          -- stop an in-flight response
+  },
+
+  -- Optional GLOBAL keymaps. Only applied when require("nursor").setup{} is
+  -- called. Each maps to a command; set to false/nil to skip.
+  global_keymaps = {
+    toggle = nil,            -- e.g. "<leader>cc"
+    ask = nil,               -- e.g. "<leader>ca" (works in normal + visual)
+  },
+}
+
+M.options = vim.deepcopy(M.defaults)
+
+function M.setup(opts)
+  M.options = vim.tbl_deep_extend("force", vim.deepcopy(M.defaults), opts or {})
+  return M.options
+end
+
+return M
